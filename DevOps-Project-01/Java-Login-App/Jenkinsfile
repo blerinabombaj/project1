@@ -7,7 +7,8 @@ pipeline {
                     sh '''
                     pwd
                     ls -la
-                    mvn clean package -DskipTests || echo "Maven not found, skipping"
+                    chmod +x mvnw
+                    ./mvnw clean package -DskipTests
                     '''
                 }
             }
@@ -18,18 +19,18 @@ pipeline {
                     sh '''
                     pwd
                     ls -la
-                    docker build -t digdigdigdig/java-login-app:test .
+                    /usr/local/bin/docker build -t digdigdigdig/java-login-app:test .
                     '''
                 }
             }
         }
         stage('3. Deploy K8s') {
             steps {
-                dir('DevOps-Project-01/Java-Login-App/k8s') {
+                dir('DevOps-Project-01/Java-Login-App') {
                     sh '''
                     pwd
                     ls -la
-                    kubectl apply -f . --dry-run=client
+                    kubectl apply -f k8s-deployment.yaml --dry-run=client
                     '''
                 }
             }

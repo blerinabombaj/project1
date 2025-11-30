@@ -5,23 +5,29 @@ pipeline {
             steps {
                 dir('DevOps-Project-01/Java-Login-App') {
                     sh '''
-                    pwd
-                    ls -la
-                    # Use FULL PATH to Maven (Homebrew Apple Silicon)
                     /opt/homebrew/bin/mvn clean package -DskipTests
                     ls -la target/
                     '''
                 }
             }
         }
-        stage('2. Docker Build') {
+        stage('2. Docker Build - NO CREDS') {
             steps {
                 dir('DevOps-Project-01/Java-Login-App') {
                     sh '''
-                    pwd
-                    # Find Docker path
-                    ls /usr/local/bin/docker* /opt/homebrew/bin/docker* 2>/dev/null || echo "Docker paths"
-                    /usr/local/bin/docker build -t digdigdigdig/java-login-app:test . || /opt/homebrew/bin/docker build -t digdigdigdig/java-login-app:test .
+                    # Skip credential helper entirely
+                    DOCKER_BUILDKIT=0 /usr/local/bin/docker build --no-cache -t digdigdigdig/java-login-app:test .
+                    /usr/local/bin/docker images | head -5
+                    '''
+                }
+            }
+        }
+        stage('3. Test Container') {
+            steps {
+                dir('DevOps-Project-01/Java-Login-App') {
+                    sh '''
+                    /usr/local/bin/docker run --rm -p 8081:8080 digdigdigdig/java-login-app:test sleep 5
+                    echo "Container test PASSED"
                     '''
                 }
             }

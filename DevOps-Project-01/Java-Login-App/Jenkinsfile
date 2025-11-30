@@ -1,16 +1,14 @@
 pipeline {
     agent any
     stages {
-        stage('1. Install Maven & Build') {
+        stage('1. Maven Build') {
             steps {
                 dir('DevOps-Project-01/Java-Login-App') {
                     sh '''
                     pwd
                     ls -la
-                    # Find Maven in PATH
-                    which mvn || ls /usr/local/bin/mvn* /opt/homebrew/bin/mvn* || echo "Maven not found"
-                    # Build with any available Maven
-                    mvn clean package -DskipTests || ./mvnw clean package -DskipTests || echo "Build skipped"
+                    # Use FULL PATH to Maven (Homebrew Apple Silicon)
+                    /opt/homebrew/bin/mvn clean package -DskipTests
                     ls -la target/
                     '''
                 }
@@ -21,10 +19,9 @@ pipeline {
                 dir('DevOps-Project-01/Java-Login-App') {
                     sh '''
                     pwd
-                    # Find Docker in PATH
-                    which docker || ls /usr/local/bin/docker* /opt/homebrew/bin/docker* || echo "Docker not found"
-                    # Test Docker
-                    docker --version || echo "Docker not available"
+                    # Find Docker path
+                    ls /usr/local/bin/docker* /opt/homebrew/bin/docker* 2>/dev/null || echo "Docker paths"
+                    /usr/local/bin/docker build -t digdigdigdig/java-login-app:test . || /opt/homebrew/bin/docker build -t digdigdigdig/java-login-app:test .
                     '''
                 }
             }

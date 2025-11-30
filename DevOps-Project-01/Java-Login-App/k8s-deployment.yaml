@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: java-login-app
-        image: digdigdigdig/java-login-app:latest
+        image: docker.io/digdigdigdig/java-login-app:latest  # ← FIXED!
         ports:
         - containerPort: 8080
         resources:
@@ -59,6 +59,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx  # ← FIXED for Minikube
   rules:
   - host: java-app.local
     http:

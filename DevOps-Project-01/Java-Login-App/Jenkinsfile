@@ -1,76 +1,38 @@
 pipeline {
     agent any
-    tools {
-        nodejs 'nodejs-18'  // Make sure this matches the NodeJS tool name in Jenkins global config
-    }
-    environment {
-        PATH = "${tool 'nodejs-18'}/bin:${env.PATH}"
-    }
     stages {
-        stage('TEST_FIRST') {
+        stage('1. Build Java App') {
             steps {
-                echo '🔥 TEST STAGE RUNNING!'
-                sh '''
-                    echo "=== DEBUG INFO ==="
+                dir('DevOps-Project-01/Java-Login-App') {
+                    sh '''
                     pwd
-                    ls -la *.js package*
-                    which node || echo "❌ NO NODE!"
-                    node --version || echo "❌ NODE FAILED"
-                    if [ -f test-example.js ]; then
-                        echo "🎯 RUNNING TEST!"
-                        node test-example.js
-                    else
-                        echo "❌ NO TEST FILE"
-                    fi
-                '''
-            }
-        }
-        stage('List Files') {
-            steps {
-                sh 'ls -la'
-            }
-        }
-       stage('Build Docker') {
-    steps {
-        sh '''
-            export PATH=$PATH:/usr/local/bin
-            docker build -t digdigdigdig/jenkins-template:${BUILD_NUMBER} .
-            docker tag digdigdigdig/jenkins-template:${BUILD_NUMBER} digdigdigdig/jenkins-template:latest
-        '''
-    }
-}
-        stage('Push Docker') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        export PATH=$PATH:/usr/local/bin
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push digdigdigdig/jenkins-template:${BUILD_NUMBER}
-                        docker push digdigdigdig/jenkins-template:latest
+                    ls -la
+                    mvn clean package -DskipTests || echo "Maven not found, skipping"
                     '''
                 }
             }
         }
-        stage('Deploy Kubernetes') {
+        stage('2. Docker Build') {
             steps {
-                withCredentials([string(credentialsId: 'kubconfig', variable: 'KUBECONFIG_CONTENT')]) {
+                dir('DevOps-Project-01/Java-Login-App') {
                     sh '''
-                        export PATH=$PATH:/usr/local/bin
-                        if ! command -v kubectl >/dev/null 2>&1; then
-                            echo "WARNING: kubectl not found - skipping"
-                            exit 0
-                        fi
-                        echo "$KUBECONFIG_CONTENT" > /tmp/kubeconfig
-                        export KUBECONFIG=/tmp/kubeconfig
-                        kubectl get nodes || true
+                    pwd
+                    ls -la
+                    docker build -t digdigdigdig/java-login-app:test .
                     '''
                 }
             }
         }
-    }
-    post {
-        always {
-            sh 'docker logout || true'
+        stage('3. Deploy K8s') {
+            steps {
+                dir('DevOps-Project-01/Java-Login-App/k8s') {
+                    sh '''
+                    pwd
+                    ls -la
+                    kubectl apply -f . --dry-run=client
+                    '''
+                }
+            }
         }
     }
 }

@@ -1,91 +1,62 @@
 pipeline {
     agent any
-    
-    environment {
-        DOCKER_IMAGE = "digdigdigdig/html-web-app:${BUILD_NUMBER}"
-        AWS_REGION = 'us-east-1'
-        ECS_CLUSTER = 'devops-project1-cluster'
-        ECS_SERVICE = 'html-web-service'
-        ECS_TASK_DEFINITION = 'html-web-task'
-    }
-    
     stages {
-        stage('Checkout') {
+        stage('1. Build Docker Image') {
             steps {
-                checkout scm
-            }
-        }
-        
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Use full Docker path for macOS/Homebrew
+                dir('html-web-app') {
                     sh '''
-                        /usr/local/bin/docker build -t ${DOCKER_IMAGE} .
-                        /usr/local/bin/docker images | grep ${DOCKER_IMAGE}
+                    /usr/local/bin/docker build --no-cache -t digdigdigdig/html-web-app:${BUILD_NUMBER} .
+                    /usr/local/bin/docker images | head -5
                     '''
                 }
             }
         }
-        
-        stage('Test Container Locally') {
+        stage('2. Test Container') {
             steps {
-                sh '''
-                    /usr/local/bin/docker run --rm -d -p 8081:80 --name test-container ${DOCKER_IMAGE}
+                dir('html-web-app') {
+                    sh '''
+                    /usr/local/bin/docker run --rm -d -p 8081:80 digdigdigdig/html-web-app:${BUILD_NUMBER}
                     sleep 5
-                    curl -f http://localhost:8081 || echo "Test failed"
-                    /usr/local/bin/docker stop test-container
-                '''
+                    curl -f http://localhost:8081 || (echo "Container test FAILED" && exit 1)
+                    /usr/local/bin/docker ps -a
+                    /usr/local/bin/docker stop $(docker ps -q --filter ancestor=digdigdigdig/html-web-app:${BUILD_NUMBER})
+                    '''
+                }
             }
         }
-        
-        stage('Push to Docker Hub') {
+        stage('3. Push to Docker Hub') {
             steps {
-                script {
-                    // Docker login + push
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                        sh '''
-                            echo $DOCKER_PASS | /usr/local/bin/docker login -u $DOCKER_USER --password-stdin
-                            /usr/local/bin/docker push ${DOCKER_IMAGE}
-                        '''
+                dir('html-web-app') {
+                    script {
+                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                            sh "docker push digdigdigdig/html-web-app:${BUILD_NUMBER}"
+                        }
                     }
                 }
             }
         }
-        
-        stage('Update ECS Task Definition') {
+        stage('4. Update ECS Task Definition and Deploy') {
             steps {
-                sh '''
-                    sed -i "" "s|digdigdigdig/html-web-app:latest|${DOCKER_IMAGE}|g" task-definition.json
+                dir('html-web-app') {
+                    sh '''
+                    sed -i "" "s|digdigdigdig/html-web-app:latest|digdigdigdig/html-web-app:${BUILD_NUMBER}|g" task-definition.json
                     aws ecs register-task-definition --cli-input-json file://task-definition.json --region us-east-1
-                '''
-            }
-        }
-        
-        stage('Deploy to ECS') {
-            steps {
-                sh '''
-                    aws ecs update-service \
-                        --cluster ${ECS_CLUSTER} \
-                        --service ${ECS_SERVICE} \
-                        --task-definition ${ECS_TASK_DEFINITION} \
-                        --force-new-deployment \
-                        --region us-east-1
-                    aws ecs wait services-stable --cluster ${ECS_CLUSTER} --services ${ECS_SERVICE} --region us-east-1
-                '''
+                    aws ecs update-service --cluster devops-project1-cluster --service html-web-service --task-definition html-web-task --force-new-deployment --region us-east-1
+                    aws ecs wait services-stable --cluster devops-project1-cluster --services html-web-service --region us-east-1
+                    '''
+                }
             }
         }
     }
-    
     post {
         always {
             sh '/usr/local/bin/docker system prune -f || true'
         }
         success {
-            echo '🚀 Pipeline SUCCESS! Static site deployed to ECS!'
+            echo '🚀 Pipeline completed successfully!'
         }
         failure {
-            echo '❌ Pipeline FAILED. Check logs above.'
+            echo '❌ Pipeline failed. Check logs.'
         }
     }
 }

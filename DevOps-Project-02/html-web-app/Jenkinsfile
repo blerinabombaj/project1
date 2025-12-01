@@ -51,20 +51,22 @@ pipeline {
             steps {
                 dir('DevOps-Project-02/html-web-app') {
                     sh '''
-                    /usr/local/bin/docker run --rm -d -p 8081:80 ${DOCKER_IMAGE}
+                    # Clean up ALL old containers first
+                    /usr/local/bin/docker stop $(/usr/local/bin/docker ps -q --filter ancestor=digdigdigdig/html-web-app) 2>/dev/null || true
+                    /usr/local/bin/docker rm $(/usr/local/bin/docker ps -aq --filter ancestor=digdigdigdig/html-web-app) 2>/dev/null || true
+                    
+                    # Run new container on port 8082
+                    /usr/local/bin/docker run --rm -d -p 8082:80 ${DOCKER_IMAGE}
                     sleep 5
-                    curl -f http://localhost:8081 || (echo "Container test FAILED" && exit 1)
+                    curl -f http://localhost:8082 || (echo "Container test FAILED" && exit 1)
+                    echo "✅ Container test PASSED - Site accessible at http://localhost:8082"
                     /usr/local/bin/docker stop $(/usr/local/bin/docker ps -q --filter ancestor=${DOCKER_IMAGE})
-                    echo "Container test PASSED"
                     '''
                 }
             }
         }
         
         stage('Push to Docker Hub') {
-            when {
-                expression { env.BUILD_NUMBER != null }
-            }
             steps {
                 dir('DevOps-Project-02/html-web-app') {
                     script {
@@ -96,10 +98,14 @@ pipeline {
     
     post {
         always {
-            sh '/usr/local/bin/docker system prune -f || true'
+            sh '''
+            /usr/local/bin/docker stop $(/usr/local/bin/docker ps -q --filter ancestor=digdigdigdig/html-web-app) 2>/dev/null || true
+            /usr/local/bin/docker rm $(/usr/local/bin/docker ps -aq --filter ancestor=digdigdigdig/html-web-app) 2>/dev/null || true
+            /usr/local/bin/docker system prune -f || true
+            '''
         }
         success {
-            echo "🚀 Pipeline completed successfully! Image: ${DOCKER_IMAGE}"
+            echo "🚀 FULL PIPELINE SUCCESS! Image: ${DOCKER_IMAGE}"
         }
         failure {
             echo '❌ Pipeline failed. Check logs.'

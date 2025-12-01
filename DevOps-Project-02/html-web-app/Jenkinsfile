@@ -1,53 +1,81 @@
 pipeline {
     agent any
+    
+    environment {
+        DOCKER_IMAGE = "digdigdigdig/html-web-app:${BUILD_NUMBER}"
+        AWS_REGION = 'us-east-1'
+        ECS_CLUSTER = 'devops-project1-cluster'
+        ECS_SERVICE = 'html-web-service'
+        ECS_TASK_DEFINITION = 'html-web-task'
+    }
+    
     stages {
-        stage('1. Build Docker Image') {
+        stage('Debug Workspace') {
+            steps {
+                sh '''
+                echo "Current directory:"
+                pwd
+                echo "List root directory contents:"
+                ls -la
+                echo "List html-web-app directory contents:"
+                ls -la html-web-app || echo "html-web-app directory missing"
+                echo "Check Dockerfile in html-web-app:"
+                ls -la html-web-app/Dockerfile || echo "Dockerfile missing"
+                '''
+            }
+        }
+        
+        stage('Build Docker Image') {
             steps {
                 dir('html-web-app') {
                     sh '''
-                    /usr/local/bin/docker build --no-cache -t digdigdigdig/html-web-app:${BUILD_NUMBER} .
+                    /usr/local/bin/docker build --no-cache -t ${DOCKER_IMAGE} .
                     /usr/local/bin/docker images | head -5
                     '''
                 }
             }
         }
-        stage('2. Test Container') {
+        
+        stage('Test Container') {
             steps {
                 dir('html-web-app') {
                     sh '''
-                    /usr/local/bin/docker run --rm -d -p 8081:80 digdigdigdig/html-web-app:${BUILD_NUMBER}
+                    /usr/local/bin/docker run --rm -d -p 8081:80 ${DOCKER_IMAGE}
                     sleep 5
                     curl -f http://localhost:8081 || (echo "Container test FAILED" && exit 1)
                     /usr/local/bin/docker ps -a
-                    /usr/local/bin/docker stop $(docker ps -q --filter ancestor=digdigdigdig/html-web-app:${BUILD_NUMBER})
+                    /usr/local/bin/docker stop $(docker ps -q --filter ancestor=${DOCKER_IMAGE})
                     '''
                 }
             }
         }
-        stage('3. Push to Docker Hub') {
+        
+        stage('Push to Docker Hub') {
             steps {
                 dir('html-web-app') {
                     script {
                         docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                            sh "docker push digdigdigdig/html-web-app:${BUILD_NUMBER}"
+                            sh "docker push ${DOCKER_IMAGE}"
                         }
                     }
                 }
             }
         }
-        stage('4. Update ECS Task Definition and Deploy') {
+        
+        stage('Update ECS Task Definition and Deploy') {
             steps {
                 dir('html-web-app') {
                     sh '''
-                    sed -i "" "s|digdigdigdig/html-web-app:latest|digdigdigdig/html-web-app:${BUILD_NUMBER}|g" task-definition.json
-                    aws ecs register-task-definition --cli-input-json file://task-definition.json --region us-east-1
-                    aws ecs update-service --cluster devops-project1-cluster --service html-web-service --task-definition html-web-task --force-new-deployment --region us-east-1
-                    aws ecs wait services-stable --cluster devops-project1-cluster --services html-web-service --region us-east-1
+                    sed -i "" "s|digdigdigdig/html-web-app:latest|${DOCKER_IMAGE}|g" task-definition.json
+                    aws ecs register-task-definition --cli-input-json file://task-definition.json --region ${AWS_REGION}
+                    aws ecs update-service --cluster ${ECS_CLUSTER} --service ${ECS_SERVICE} --task-definition ${ECS_TASK_DEFINITION} --force-new-deployment --region ${AWS_REGION}
+                    aws ecs wait services-stable --cluster ${ECS_CLUSTER} --services ${ECS_SERVICE} --region ${AWS_REGION}
                     '''
                 }
             }
         }
     }
+    
     post {
         always {
             sh '/usr/local/bin/docker system prune -f || true'

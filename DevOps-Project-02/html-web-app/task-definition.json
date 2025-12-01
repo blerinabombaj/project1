@@ -1,0 +1,23 @@
+{
+  "family": "html-web-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::444062204470:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::444062204470:role/ecsTaskExecutionRole",
+  "containerDefinitions": [{
+    "name": "html-web-app",
+    "image": "digdigdigdig/html-web-app:latest",
+    "portMappings": [{"containerPort": 80, "protocol": "tcp"}],
+    "essential": true,
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/html-web-app",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }]
+}

@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh 'docker build -t digdigdigdig/html-web-app:${BUILD_NUMBER} .'
+            }
+        }
+        stage('Push') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                        docker.image("digdigdigdig/html-web-app:${BUILD_NUMBER}").push()
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh '''
+                    sed -i "s|digdigdigdig/html-web-app:latest|digdigdigdig/html-web-app:${BUILD_NUMBER}|g" task-definition.json
+                    aws ecs register-task-definition --cli-input-json file://task-definition.json
+                    aws ecs update-service --cluster devops-project1-cluster --service html-web-service --task-definition html-web-task --force-new-deployment
+                '''
+            }
+        }
+    }
+}

@@ -10,6 +10,18 @@ pipeline {
     }
     
     stages {
+        stage('Docker Login') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                        sh '''
+                        echo $DOCKER_PASS | /usr/local/bin/docker login -u $DOCKER_USER --password-stdin
+                        '''
+                    }
+                }
+            }
+        }
+        
         stage('Debug Workspace') {
             steps {
                 sh '''

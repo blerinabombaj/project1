@@ -13,21 +13,15 @@ pipeline {
         stage('Debug Workspace') {
             steps {
                 sh '''
-                echo "Current directory:"
-                pwd
-                echo "List root directory contents:"
-                ls -la
-                echo "List html-web-app directory contents:"
-                ls -la html-web-app || echo "html-web-app directory missing"
-                echo "Check Dockerfile in html-web-app:"
-                ls -la html-web-app/Dockerfile || echo "Dockerfile missing"
+                echo "Listing contents of DevOps-Project-02/html-web-app:"
+                ls -la DevOps-Project-02/html-web-app || echo "Folder missing."
                 '''
             }
         }
         
         stage('Build Docker Image') {
             steps {
-                dir('html-web-app') {
+                dir('DevOps-Project-02/html-web-app') {
                     sh '''
                     /usr/local/bin/docker build --no-cache -t ${DOCKER_IMAGE} .
                     /usr/local/bin/docker images | head -5
@@ -38,7 +32,7 @@ pipeline {
         
         stage('Test Container') {
             steps {
-                dir('html-web-app') {
+                dir('DevOps-Project-02/html-web-app') {
                     sh '''
                     /usr/local/bin/docker run --rm -d -p 8081:80 ${DOCKER_IMAGE}
                     sleep 5
@@ -52,7 +46,7 @@ pipeline {
         
         stage('Push to Docker Hub') {
             steps {
-                dir('html-web-app') {
+                dir('DevOps-Project-02/html-web-app') {
                     script {
                         docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
                             sh "docker push ${DOCKER_IMAGE}"
@@ -64,7 +58,7 @@ pipeline {
         
         stage('Update ECS Task Definition and Deploy') {
             steps {
-                dir('html-web-app') {
+                dir('DevOps-Project-02/html-web-app') {
                     sh '''
                     sed -i "" "s|digdigdigdig/html-web-app:latest|${DOCKER_IMAGE}|g" task-definition.json
                     aws ecs register-task-definition --cli-input-json file://task-definition.json --region ${AWS_REGION}

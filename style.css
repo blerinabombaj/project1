@@ -1,0 +1,2 @@
+body { background: #222; color: #0f0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: monospace; }
+.clock { text-align: center; border: 2px solid #0f0; padding: 20px; border-radius: 10px; }

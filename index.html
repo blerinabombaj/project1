@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevOps Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="clock">
+        <h1 id="time">00:00:00</h1>
+        <p>Deployed on Ubuntu via Apache</p>
+    </div>
+    <script>
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('time').innerText = now.toLocaleTimeString();
+        }, 1000);
+    </script>
+</body>
+</html>

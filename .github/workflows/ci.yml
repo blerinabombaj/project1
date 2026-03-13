@@ -1,8 +1,10 @@
-name: CI/CD - Build, Push, and Update Manifest
+name: CI/CD - Build, Push, and Update Helm
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+      - main
+      - feature/helm-migration  # Allows the pipe to run on your new branch
 
 jobs:
   build-and-push:
@@ -29,15 +31,18 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/devops-project1:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/devops-project1:${{ github.sha }}
 
-      - name: Update Kubernetes YAML
+      - name: Update Helm Values
         run: |
-          # This specifically looks for your image name and replaces the tag with the SHA
-          sed -i 's|image:.*|image: digdigdigdig/devops-project1:${{ github.sha }}|' k8s/deployment.yml
-      - name: Commit and Push Manifest Change
+          # We now target values.yaml instead of the old k8s folder
+          # This specifically updates the 'tag:' line under the 'image:' section
+          sed -i 's|tag:.*|tag: ${{ github.sha }}|' charts/project1/values.yaml
+
+      - name: Commit and Push Helm Change
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
-          git add k8s/deployment.yml
-          # The [skip ci] is important so this commit doesn't trigger the workflow again!
-          git commit -m "chore: update image tag to ${{ github.sha }} [skip ci]"
-          git push origin main
+          git add charts/project1/values.yaml
+          
+          # This ensures it pushes back to whichever branch triggered the run
+          git commit -m "chore: update helm image tag to ${{ github.sha }} [skip ci]"
+          git push origin ${{ github.ref_name }}

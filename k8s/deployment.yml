@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: project1container
-        image: digdigdigdig/devops-project1:c5f59c94548bb4f3af5879853d761e54dfcded4f
+        image: digdigdigdig/devops-project1:d205caf2b5330eda54326450becf445ba09bd71b
         ports:
         - containerPort: 80
         

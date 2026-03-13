@@ -1,0 +1,21 @@
+replicaCount: 5
+
+image:
+  repository: digdigdigdig/devops-project1
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80
+  nodePort: 30888
+
+metrics:
+  enabled: true
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+  limits:
+    memory: "128Mi"
+    cpu: "200m"

@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: project1container
-        image: digdigdigdig/project1:latest
+        image: digdigdigdig/project1:678f7f25a299ad6d59e057109fecfc672fc03267
         ports:
         - containerPort: 80

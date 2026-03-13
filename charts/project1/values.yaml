@@ -6,8 +6,13 @@ image:
   pullPolicy: IfNotPresent
 
 service:
+  type: NodePort
   port: 80
   nodePort: 30888
+
+ingress:
+  enabled: true
+  host: "localhost"
 
 metrics:
   enabled: true

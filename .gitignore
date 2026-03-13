@@ -1,0 +1,19 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker & Kubernetes
+.docker/
+.kube/
+*.log
+
+# Minikube local state
+.minikube/
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment Secrets (NEVER push these)
+.env
+*.pem

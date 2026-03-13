@@ -5,10 +5,13 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <h1 class="header-title">DevOps Infrastructure Monitor</h1>
+
     <div class="clock">
         <h1 id="time">00:00:00</h1>
-        <p>Deployed on Ubuntu via Apache</p>
+        <p>Managed by ArgoCD & Kubernetes</p>
     </div>
+
     <script>
         setInterval(() => {
             const now = new Date();
@@ -16,4 +19,3 @@
         }, 1000);
     </script>
 </body>
-</html>

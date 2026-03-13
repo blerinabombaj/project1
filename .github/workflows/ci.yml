@@ -32,7 +32,7 @@ jobs:
       - name: Update Kubernetes YAML
         run: |
           # This specifically looks for your image name and replaces the tag with the SHA
-          sed -i "s|image: .*|image: digdigdigdig/devops-project1:${{ github.sha }}|g" k8s/deployment.yml          
+          sed -i 's|image:.*|image: digdigdigdig/devops-project1:${{ github.sha }}|' k8s/deployment.yml
       - name: Commit and Push Manifest Change
         run: |
           git config --global user.name "GitHub Action"

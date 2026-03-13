@@ -8,7 +8,7 @@ spec:
     http:
       paths:
       - pathType: Prefix
-        path: "/44"
+        path: "/"
         backend:
           service:
             name: project1-service

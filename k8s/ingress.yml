@@ -4,7 +4,7 @@ metadata:
   name: project1-host-ingress
 spec:
   rules:
-  - host: "lewishamilton.com"
+  - host: "localhost"
     http:
       paths:
       - pathType: Prefix

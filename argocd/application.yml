@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: project1-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/blerinabombaj/project1.git
+    targetRevision: feature/helm-migration
+    path: charts/project1
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

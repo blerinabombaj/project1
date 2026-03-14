@@ -24,3 +24,9 @@ resources:
   limits:
     memory: "128Mi"
     cpu: "200m"
+
+database:
+  name: ps_db
+  user: ps_user
+  password: SecurePassword
+  image: postgres:15-alpine

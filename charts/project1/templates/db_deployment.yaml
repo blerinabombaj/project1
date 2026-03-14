@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-db
+  labels:
+    app: {{ .Release.Name }}-db
+spec:
+  replicas: 1 # Keep this at 1 to avoid data conflicts
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-db
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-db
+    spec:
+      containers:
+      - name: postgres
+        image: {{ .Values.database.image | default "postgres:15-alpine" }}
+        ports:
+        - containerPort: 5432
+        # This tells the DB to use the variables we defined in our ConfigMap
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-db-config

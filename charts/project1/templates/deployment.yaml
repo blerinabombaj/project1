@@ -24,7 +24,6 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.port }}
-        
         resources:
           requests:
             memory: {{ .Values.resources.requests.memory | quote }}

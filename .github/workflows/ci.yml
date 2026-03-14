@@ -4,7 +4,8 @@ on:
   push:
     branches: 
       - main
-      - feature/**
+      - feature/login-system
+      - feature/helm-migration
 jobs:
   build-and-push:
     runs-on: ubuntu-latest

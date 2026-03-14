@@ -45,40 +45,81 @@
             <input type="password" id="regPassword" placeholder="Password" required>
             <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
             <button type="submit" class="auth-btn">Register</button>
+            <p class="error-msg" id="regError" style="color: red; display: none;"></p>
             <p class="toggle-auth">Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
         </form>
     </div>
 
     <script>
+        // User database in localStorage
+        function getUsers() {
+            const users = localStorage.getItem('users');
+            return users ? JSON.parse(users) : {};
+        }
+
+        function saveUser(username, password) {
+            const users = getUsers();
+            users[username] = password;
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        function userExists(username) {
+            const users = getUsers();
+            return username in users;
+        }
+
+        function validatePassword(username, password) {
+            const users = getUsers();
+            return users[username] === password;
+        }
+
         // Toggle between login and register forms
         function showLogin() {
             document.getElementById('loginForm').classList.remove('hidden');
             document.getElementById('registerForm').classList.add('hidden');
+            clearLoginForm();
         }
 
         function showRegister() {
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('registerForm').classList.remove('hidden');
+            clearRegisterForm();
         }
 
-        // Mock login/logout (will integrate with Node.js backend)
+        // Clear form fields
+        function clearLoginForm() {
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function clearRegisterForm() {
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regConfirmPassword').value = '';
+            document.getElementById('regError').style.display = 'none';
+        }
+
+        // Login/logout
         function login(username) {
-            localStorage.setItem('user', username);
+            localStorage.setItem('currentUser', username);
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('registerBtn').classList.add('hidden');
             document.getElementById('loginBtn').classList.add('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('username').innerText = username;
+            clearLoginForm();
         }
 
         function logout() {
-            localStorage.removeItem('user');
+            localStorage.removeItem('currentUser');
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('loginBtn').classList.remove('hidden');
             document.getElementById('registerBtn').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.add('hidden');
             document.getElementById('loginForm').classList.remove('hidden');
+            clearLoginForm();
         }
 
         // Clock update
@@ -89,38 +130,70 @@
 
         // Check if user is logged in on page load
         window.addEventListener('load', () => {
-            const user = localStorage.getItem('user');
-            if (user) {
-                login(user);
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser && userExists(currentUser)) {
+                login(currentUser);
             }
         });
 
         // Handle login form submission
         document.getElementById('loginForm').querySelector('form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const username = document.getElementById('loginUsername').value;
-            // TODO: Send to Node.js backend /login endpoint
-            console.log('Login attempt:', username);
-            login(username); // Mock login for now
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!userExists(username)) {
+                alert('User not found. Please register first.');
+                return;
+            }
+
+            if (!validatePassword(username, password)) {
+                alert('Incorrect password!');
+                return;
+            }
+
+            login(username);
         });
 
         // Handle register form submission
         document.getElementById('registerForm').querySelector('form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const username = document.getElementById('regUsername').value;
-            const email = document.getElementById('regEmail').value;
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
 
-            if (password !== confirmPassword) {
-                alert('Passwords do not match!');
+            // Validation
+            if (!username) {
+                showRegError('Username is required');
                 return;
             }
 
-            // TODO: Send to Node.js backend /register endpoint
-            console.log('Register attempt:', { username, email, password });
+            if (userExists(username)) {
+                showRegError('Username already exists!');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showRegError('Passwords do not match!');
+                return;
+            }
+
+            if (password.length < 4) {
+                showRegError('Password must be at least 4 characters');
+                return;
+            }
+
+            // Save user
+            saveUser(username, password);
             alert('Registration successful! Please login.');
             showLogin();
         });
+
+        function showRegError(msg) {
+            const errorEl = document.getElementById('regError');
+            errorEl.innerText = msg;
+            errorEl.style.display = 'block';
+        }
     </script>
 </body>

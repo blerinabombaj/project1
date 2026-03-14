@@ -1,91 +1,52 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #222;
-  color: #0f0;
-  font-family: monospace;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   min-height: 100vh;
-}
-
-.navbar {
-  background: #111;
-  border-bottom: 2px solid #0f0;
-  padding: 15px 30px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-}
-
-.nav-title {
-  font-size: 20px;
-  color: #0f0;
-}
-
-.nav-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.nav-btn {
-  background: #0f0;
-  color: #222;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  font-family: monospace;
-  transition: 0.3s;
-}
-
-.nav-btn:hover {
-  background: #0a0;
-  transform: scale(1.05);
 }
 
 .hidden {
   display: none !important;
 }
 
+/* ==================== Auth Forms ==================== */
 .auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
+  background: rgba(20, 20, 40, 0.95);
+  border: 2px solid #0f0;
+  border-radius: 10px;
+  padding: 40px;
+  width: 100%;
+  max-width: 350px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
 }
 
 .auth-form {
-  background: #111;
-  border: 2px solid #0f0;
-  padding: 40px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
 .auth-form h2 {
-  color: #0f0;
   text-align: center;
-  margin-bottom: 20px;
+  color: #0f0;
+  margin-bottom: 10px;
+  font-size: 28px;
 }
 
 .auth-form input {
-  background: #333;
-  color: #0f0;
+  padding: 12px;
+  background: #1a1a2e;
   border: 1px solid #0f0;
-  padding: 10px 15px;
   border-radius: 5px;
+  color: #fff;
   font-family: monospace;
   font-size: 14px;
-}
-
-.auth-form input::placeholder {
-  color: #0a0;
-  opacity: 0.7;
+  transition: 0.3s;
 }
 
 .auth-form input:focus {
@@ -94,76 +55,184 @@ body {
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
+.auth-form input::placeholder {
+  color: #666;
+}
+
 .auth-btn {
+  padding: 12px;
   background: #0f0;
   color: #222;
   border: none;
-  padding: 12px;
   border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
-  font-family: monospace;
   font-size: 16px;
   transition: 0.3s;
 }
 
 .auth-btn:hover {
   background: #0a0;
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .toggle-auth {
   text-align: center;
+  color: #888;
   font-size: 12px;
-  color: #0a0;
 }
 
 .toggle-auth a {
   color: #0f0;
-  text-decoration: underline;
+  text-decoration: none;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 .toggle-auth a:hover {
   color: #0a0;
+  text-decoration: underline;
 }
 
-.dashboard {
+.error-msg {
+  color: #ff6b6b;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ==================== Game Container ==================== */
+#gameContainer {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(20, 20, 40, 0.95);
+  border: 2px solid #0f0;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #0f0;
+}
+
+.game-info h1 {
+  font-size: 24px;
+  color: #0f0;
+  margin-bottom: 5px;
+}
+
+.player-name {
+  color: #888;
+  font-size: 14px;
+}
+
+.logout-btn {
+  padding: 8px 15px;
+  background: #0f0;
+  color: #222;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #0a0;
+  transform: scale(1.05);
+}
+
+.game-board {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+#gameCanvas {
+  border: 3px solid #0f0;
+  border-radius: 5px;
+  background: #000 !important;
+}
+
+.game-controls {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 20px;
   align-items: center;
-  min-height: calc(100vh - 70px);
-  padding: 40px 20px;
 }
 
-.header-title {
+.stats {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
+}
+
+.stat-box {
+  background: #16213e;
+  border: 1px solid #0f0;
+  border-radius: 5px;
+  padding: 15px 30px;
+  text-align: center;
+  min-width: 100px;
+}
+
+.stat-label {
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.stat-value {
   font-size: 28px;
+  font-weight: bold;
   color: #0f0;
-  text-align: center;
-  margin-bottom: 30px;
+  font-family: monospace;
 }
 
-.clock {
-  text-align: center;
-  border: 2px solid #0f0;
-  padding: 30px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+.buttons {
+  display: flex;
+  gap: 10px;
 }
 
-.clock h1 {
-  font-size: 48px;
+.game-btn {
+  padding: 12px 30px;
+  background: #0f0;
+  color: #222;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.game-btn:hover {
+  background: #0a0;
+  transform: scale(1.05);
+}
+
+.instructions {
+  background: #16213e;
+  border: 1px solid #0f0;
+  border-radius: 5px;
+  padding: 15px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+  width: 100%;
+}
+
+.instructions p {
+  margin: 5px 0;
+}
+
+.instructions strong {
   color: #0f0;
-  margin-bottom: 10px;
-}
-
-.clock p {
-  color: #0a0;
-}
-
-.welcome-msg {
-  color: #0f0;
-  font-size: 16px;
-  text-align: center;
 }

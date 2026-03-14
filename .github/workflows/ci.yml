@@ -29,13 +29,12 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/devops-project1:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/devops-project1:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/devops-project1:v1.1
 
       - name: Update Helm Values
         run: |
-          # We now target values.yaml instead of the old k8s folder
-          # This specifically updates the 'tag:' line under the 'image:' section
-          sed -i 's|tag:.*|tag: ${{ github.sha }}|' charts/project1/values.yaml
+          # Update to use version tag v1.1 (you can increment manually for releases)
+          sed -i 's|tag:.*|tag: v1.1|' charts/project1/values.yaml
 
       - name: Commit and Push Helm Change
         run: |
@@ -44,5 +43,6 @@ jobs:
           git add charts/project1/values.yaml
           
           # This ensures it pushes back to whichever branch triggered the run
-          git commit -m "chore: update helm image tag to ${{ github.sha }} [skip ci]"
+          git commit -m "chore: update helm image tag to v1.1 [skip ci]"
+          git push origin ${{ github.ref_name }}
           git push origin ${{ github.ref_name }}

@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/blerinabombaj/project1.git
-    targetRevision: feature/helm-migration
+    targetRevision: main
     path: charts/project1
     helm:
       valueFiles:

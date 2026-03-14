@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: digdigdigdig/devops-project1
-  tag: 1dbda1a8c905251a1e90ba8ca468e32ed384d3fb
+  tag: 0a1e6435ce99902b96f634a873153ed6c1651a82
   pullPolicy: IfNotPresent
 
 service:

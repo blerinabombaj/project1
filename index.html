@@ -1,21 +1,126 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DevOps Timer</title>
+    <title>DevOps Infrastructure Monitor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1 class="header-title">DevOps Infrastructure Monitor</h1>
+    <!-- Navigation -->
+    <div class="navbar">
+        <h1 class="nav-title">DevOps Infrastructure Monitor</h1>
+        <div class="nav-buttons">
+            <button id="loginBtn" class="nav-btn" onclick="showLogin()">Login</button>
+            <button id="registerBtn" class="nav-btn" onclick="showRegister()">Register</button>
+            <button id="logoutBtn" class="nav-btn hidden" onclick="logout()">Logout</button>
+        </div>
+    </div>
 
-    <div class="clock">
-        <h1 id="time">00:00:00</h1>
-        <p>Managed by ArgoCD & Kubernetes</p>
+    <!-- Dashboard (shown when logged in) -->
+    <div id="dashboard" class="dashboard hidden">
+        <h1 class="header-title">DevOps Infrastructure Monitor</h1>
+        <div class="clock">
+            <h1 id="time">00:00:00</h1>
+            <p>Managed by ArgoCD & Kubernetes</p>
+        </div>
+        <p class="welcome-msg">Welcome, <span id="username">User</span>!</p>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm" class="auth-container">
+        <form class="auth-form">
+            <h2>Login</h2>
+            <input type="text" id="loginUsername" placeholder="Username" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit" class="auth-btn">Login</button>
+            <p class="toggle-auth">Don't have an account? <a href="#" onclick="showRegister()">Register here</a></p>
+        </form>
+    </div>
+
+    <!-- Register Form -->
+    <div id="registerForm" class="auth-container hidden">
+        <form class="auth-form">
+            <h2>Register</h2>
+            <input type="text" id="regUsername" placeholder="Username" required>
+            <input type="email" id="regEmail" placeholder="Email" required>
+            <input type="password" id="regPassword" placeholder="Password" required>
+            <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+            <button type="submit" class="auth-btn">Register</button>
+            <p class="toggle-auth">Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
+        </form>
     </div>
 
     <script>
+        // Toggle between login and register forms
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        // Mock login/logout (will integrate with Node.js backend)
+        function login(username) {
+            localStorage.setItem('user', username);
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerBtn').classList.add('hidden');
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('username').innerText = username;
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('registerBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        // Clock update
         setInterval(() => {
             const now = new Date();
             document.getElementById('time').innerText = now.toLocaleTimeString();
         }, 1000);
+
+        // Check if user is logged in on page load
+        window.addEventListener('load', () => {
+            const user = localStorage.getItem('user');
+            if (user) {
+                login(user);
+            }
+        });
+
+        // Handle login form submission
+        document.getElementById('loginForm').querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            // TODO: Send to Node.js backend /login endpoint
+            console.log('Login attempt:', username);
+            login(username); // Mock login for now
+        });
+
+        // Handle register form submission
+        document.getElementById('registerForm').querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            // TODO: Send to Node.js backend /register endpoint
+            console.log('Register attempt:', { username, email, password });
+            alert('Registration successful! Please login.');
+            showLogin();
+        });
     </script>
 </body>

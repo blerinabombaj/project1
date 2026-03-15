@@ -1,0 +1,7 @@
+// filepath: /Users/robertlleshi/Desktop/project1/backend/.dockerignore
+node_modules
+npm-debug.log
+.env
+.git
+Dockerfile
+README.md

@@ -30,3 +30,14 @@ database:
   user: ps_user
   password: SecurePassword
   image: postgres:15-alpine
+
+frontendImage:
+  repository: digdigdigdig/project1-frontend 
+  tag: latest 
+  pullPolicy: Always
+
+backendImage:
+  repository: digdigdigdig/project1-backend
+  tag: latest 
+  pullPolicy: Always
+    

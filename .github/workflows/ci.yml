@@ -1,47 +1,72 @@
-name: CI/CD - Build, Push, and Update Helm
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: 
+    branches:
       - main
-      - feature/login-system
-      - feature/helm-migration
+      - feature/**
+
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write 
-      
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - name: Set up Git config for push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - name: Extract commit SHA for image tagging
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v4
         with:
-          context: .
+          context: . 
+          file: ./Dockerfile 
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/devops-project1:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/devops-project1:${{ github.sha }}
+            digdigdigdig/project1-frontend:latest
+            digdigdigdig/project1-frontend:${{ steps.vars.outputs.sha_short }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Update Helm Values with commit SHA
-        run: |
-          # Update to use unique commit SHA tag for automatic deployment
-          sed -i 's|tag:.*|tag: ${{ github.sha }}|' charts/project1/values.yaml
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend 
+          file: ./backend/Dockerfile 
+          push: true
+          tags: |
+            digdigdigdig/project1-backend:latest
+            digdigdigdig/project1-backend:${{ steps.vars.outputs.sha_short }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Commit and Push Helm Change
+      - name: Update Helm values with new image tags
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git add charts/project1/values.yaml
-          
-          # This ensures it pushes back to whichever branch triggered the run
-          git commit -m "chore: auto-update helm image tag to ${{ github.sha }} [skip ci]"
-          git push origin ${{ github.ref_name }}
+          # Update frontend image tag
+          sed -i "s|frontendImageTag:.*|frontendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values.yaml
+          sed -i "s|frontendImageTag:.*|frontendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values-prod.yaml
+          # Update backend image tag
+          sed -i "s|backendImageTag:.*|backendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values.yaml
+          sed -i "s|backendImageTag:.*|backendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values-prod.yaml
+
+          # Verify changes (optional)
+          cat charts/project1/values.yaml
+          cat charts/project1/values-prod.yaml
+        
+      - name: Commit and push updated Helm values
+        run: |
+          git add charts/project1/values.yaml charts/project1/values-prod.yaml
+          git commit -m "chore: update helm image tags for frontend and backend [skip ci]" || echo "No changes to commit"
+          git push

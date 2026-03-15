@@ -1,0 +1,19 @@
+{{- if .Values.backendImage.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "project1.fullname" . }}-backend-service
+  labels:
+    {{- include "project1.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  type: {{ .Values.backendImage.service.type }}
+  ports:
+    - port: {{ .Values.backendImage.service.port }} # External service port
+      targetPort: http # Refers to the named port in the deployment container
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "project1.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+{{- end }}

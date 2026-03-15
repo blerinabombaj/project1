@@ -1,43 +1,77 @@
-replicaCount: 1
 
-image:
-  repository: digdigdigdig/devops-project1
-  tag: 23a8fe62e54b94fa63c24832f4dd5c0f733e0294
+frontendImage:
+  enabled: true
+  repository: digdigdigdig/project1-frontend
+  tag: latest
   pullPolicy: Always
 
-service:
-  type: NodePort
-  port: 80
-  nodePort: 30888
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 30888
+
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+
+  replicaCount: 1
+
+backendImage:
+  enabled: true 
+  repository: digdigdigdig/project1-backend 
+  tag: latest 
+  pullPolicy: Always 
+  replicaCount: 1 
+  service:
+    type: ClusterIP 
+    port: 3001      
+  resources: 
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+
+database:
+  enabled: true # ADDED: Flag to enable/disable DB deployment
+  name: project1db # CHANGED: Was 'ps_db'. IMPORTANT: backend/server.js uses 'project1db'. We MUST align this.
+  user: project1user # CHANGED: Was 'ps_user'. IMPORTANT: backend/server.js uses 'project1user'.
+  password: project1pass # CHANGED: Was 'SecurePassword'. IMPORTANT: backend/server.js uses 'project1pass'.
+  image: postgres:15-alpine # UNCHANGED: From your original 'database:'
+  
+  service: # ADDED: Service configuration for database
+    type: ClusterIP
+    port: 5432 # Default PostgreSQL port
+  resources: # ADDED: Resources for database (starting low for local)
+    requests:
+      memory: "128Mi"
+      cpu: "75m"
+    limits:
+      memory: "256Mi"
+      cpu: "150m"
+  volumeSize: 1Gi
+
 
 ingress:
   enabled: true
-  host: "localhost"
+  className: ""
+  annotations: {}
+  hosts:
+    - host: "localhost"
+      paths:
+        - path: /api 
+          pathType: Prefix
+        - path: /    
+          pathType: Prefix
+  tls: [] 
 
 metrics:
   enabled: true
 
-resources:
-  requests:
-    memory: "64Mi"
-    cpu: "100m"
-  limits:
-    memory: "128Mi"
-    cpu: "200m"
 
-database:
-  name: ps_db
-  user: ps_user
-  password: SecurePassword
-  image: postgres:15-alpine
 
-frontendImage:
-  repository: digdigdigdig/project1-frontend 
-  tag: latest 
-  pullPolicy: Always
-
-backendImage:
-  repository: digdigdigdig/project1-backend
-  tag: latest 
-  pullPolicy: Always
-    

@@ -16,6 +16,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2  
 
@@ -63,11 +66,11 @@ jobs:
       - name: Update Helm values with new image tags
         run: |
           # Update frontend image tag
-          sed -i "s|frontendImageTag:.*|frontendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values.yaml
-          sed -i "s|frontendImageTag:.*|frontendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values-prod.yaml
+          sed -i "/frontendImage:/,/tag:/ s|tag:.*|tag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values.yaml
+          sed -i "/frontendImage:/,/tag:/ s|tag:.*|tag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values-prod.yaml
           # Update backend image tag
-          sed -i "s|backendImageTag:.*|backendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values.yaml
-          sed -i "s|backendImageTag:.*|backendImageTag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values-prod.yaml
+          sed -i "/backendImage:/,/tag:/ s|tag:.*|tag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values.yaml
+          sed -i "/backendImage:/,/tag:/ s|tag:.*|tag: ${{ steps.vars.outputs.sha_short }}|" charts/project1/values-prod.yaml
 
           # Verify changes (optional)
           cat charts/project1/values.yaml

@@ -18,3 +18,7 @@ Thumbs.db
 .env
 *.pemnode_modules/
 backend/node_modules/
+
+// ...existing code...
+node_modules/
+backend/node_modules/

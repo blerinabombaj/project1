@@ -2,7 +2,7 @@
 frontendImage:
   enabled: true
   repository: digdigdigdig/project1-frontend
-  tag: 60a9232
+  tag: cfcb0b7
   pullPolicy: Always
 
   service:
@@ -23,7 +23,7 @@ frontendImage:
 backendImage:
   enabled: true 
   repository: digdigdigdig/project1-backend 
-  tag: 60a9232
+  tag: cfcb0b7
   pullPolicy: Always 
   replicaCount: 1 
   service:

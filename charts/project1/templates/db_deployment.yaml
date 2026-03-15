@@ -19,6 +19,11 @@ spec:
         image: {{ .Values.database.image | default "postgres:15-alpine" }}
         ports:
         - containerPort: 5432
+      - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "project1.fullname" . }}-db-secret
+              key: password
         # This tells the DB to use the variables we defined in our ConfigMap
         envFrom:
         - configMapRef:

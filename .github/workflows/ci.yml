@@ -40,6 +40,7 @@ jobs:
           context: . 
           file: ./Dockerfile 
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             digdigdigdig/project1-frontend:latest
             digdigdigdig/project1-frontend:${{ steps.vars.outputs.sha_short }}
@@ -52,6 +53,7 @@ jobs:
           context: ./backend 
           file: ./backend/Dockerfile 
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             digdigdigdig/project1-backend:latest
             digdigdigdig/project1-backend:${{ steps.vars.outputs.sha_short }}

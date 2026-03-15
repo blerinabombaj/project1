@@ -23,7 +23,7 @@ frontendImage:
 backendImage:
   enabled: true 
   repository: digdigdigdig/project1-backend 
-  tag: 5935831
+  tag: 60a9232
   pullPolicy: Always 
   replicaCount: 1 
   service:

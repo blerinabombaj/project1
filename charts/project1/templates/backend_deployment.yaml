@@ -39,6 +39,15 @@ spec:
               value: {{ include "project1.fullname" . }}-db-service
             - name: PGPORT
               value: "5432"
+            -name: PGUSER
+              value: {{ .Values.database.user | quote }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "project1.fullname" . }}-db-secret
+                  key: password
+            - name: PGHOST
+              value: {{ include "project1.fullname" . }}-db-service
           livenessProbe:
             httpGet:
               path: /api/health

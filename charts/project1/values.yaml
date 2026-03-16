@@ -24,3 +24,7 @@ resources:
   limits:
     memory: "128Mi"
     cpu: "200m"
+
+ui:
+  clockColor: "#a020f0"
+  background: "#222"

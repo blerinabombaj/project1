@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: project1-config
+data:
+  style.css: |
+    body { 
+      background: {{ .Values.ui.background }}; 
+      color: {{ .Values.ui.clockColor }}; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      font-family: monospace; 
+    }
+    .clock { 
+      text-align: center; 
+      border: 2px solid {{ .Values.ui.clockColor }}; 
+      padding: 20px; 
+      border-radius: 10px; 
+    }

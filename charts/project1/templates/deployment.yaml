@@ -24,7 +24,10 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.port }}
-        
+        volumeMounts:
+        - name: css-volume
+          mountPath: /usr/share/nginx/html/style.css
+          subPath: style.css
         resources:
           requests:
             memory: {{ .Values.resources.requests.memory | quote }}
@@ -32,17 +35,19 @@ spec:
           limits:
             memory: {{ .Values.resources.limits.memory | quote }}
             cpu: {{ .Values.resources.limits.cpu | quote }}
-
         livenessProbe:
           httpGet:
             path: /
             port: {{ .Values.service.port }}
           initialDelaySeconds: 5
           periodSeconds: 10
-
         readinessProbe:
           httpGet:
             path: /
             port: {{ .Values.service.port }}
           initialDelaySeconds: 2
           periodSeconds: 5
+      volumes:
+      - name: css-volume
+        configMap:
+          name: project1-config

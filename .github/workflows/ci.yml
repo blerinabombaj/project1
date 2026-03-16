@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - main
-      - feature/helm-migration  # Allows the pipe to run on your new branch
+      - feature/**
 
 jobs:
   build-and-push:

@@ -22,6 +22,22 @@ spec:
       - name: {{ .Chart.Name }}-container
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-db-secret
+              key: db-password
+        - name: DB_URL
+          valueFrom:
+            configMapKeyRef:
+              name: project1-config
+              key: DATABASE_URL
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: project1-config
+              key: DATABASE_PORT
         ports:
         - containerPort: {{ .Values.service.port }}
         volumeMounts:

@@ -16,4 +16,9 @@ Thumbs.db
 
 # Environment Secrets (NEVER push these)
 .env
-*.pem
+*.pemnode_modules/
+backend/node_modules/
+
+// ...existing code...
+node_modules/
+backend/node_modules/

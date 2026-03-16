@@ -1,0 +1,63 @@
+{{- if .Values.backendImage.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "project1.fullname" . }}-backend-deployment
+  labels:
+    {{- include "project1.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backendImage.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "project1.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "project1.labels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.backendImage.repository }}:{{ .Values.backendImage.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3001
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "3001"
+            - name: PGUSER
+              value: {{ .Values.database.user | quote }}
+            - name: PGDATABASE
+              value: {{ .Values.database.name | quote }}
+            - name: PGPASSWORD
+              value: {{ .Values.database.password | quote }}
+            - name: PGHOST
+              value: {{ include "project1.fullname" . }}-db-service
+            - name: PGPORT
+              value: "5432"
+            -name: PGUSER
+              value: {{ .Values.database.user | quote }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "project1.fullname" . }}-db-secret
+                  key: password
+            - name: PGHOST
+              value: {{ include "project1.fullname" . }}-db-service
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+          resources:
+            {{- toYaml .Values.backendImage.resources | nindent 12 }}
+{{- end }}

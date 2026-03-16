@@ -26,5 +26,5 @@ resources:
     cpu: "200m"
 
 ui:
-  clockColor: "#a020f0"
-  background: "#222"
+  clockColor: "#222"
+  background: "#ff0000"

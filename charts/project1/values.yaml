@@ -28,8 +28,3 @@ resources:
 ui:
   clockColor: "#222"
   background: "#ff0000"
-
-db:
-  password: "SuperSecretPassword123"
-  host: "project1-db-service"  
-  port: "3306"

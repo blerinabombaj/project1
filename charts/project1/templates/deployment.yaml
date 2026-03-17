@@ -18,10 +18,25 @@ spec:
         prometheus.io/port: {{ .Values.service.port | quote }}
         prometheus.io/path: "/"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: {{ .Chart.Name }}-container
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 10001
+          capabilities:
+            drop:
+              - ALL
         env:
         - name: DATABASE_PASSWORD
           valueFrom:
@@ -30,20 +45,26 @@ spec:
               key: db-password
         - name: DB_URL
           valueFrom:
-            configMapKeyRef:
-              name: project1-config
-              key: DATABASE_URL
+            secretKeyRef:
+              name: {{ .Release.Name }}-db-secret
+              key: db-host
         - name: DB_PORT
           valueFrom:
-            configMapKeyRef:
-              name: project1-config
-              key: DATABASE_PORT
+            secretKeyRef:
+              name: {{ .Release.Name }}-db-secret
+              key: db-port
         ports:
         - containerPort: {{ .Values.service.port }}
         volumeMounts:
         - name: css-volume
           mountPath: /usr/share/nginx/html/style.css
           subPath: style.css
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: run-volume
+          mountPath: /var/run
+        - name: cache-volume
+          mountPath: /var/cache/nginx
         resources:
           requests:
             memory: {{ .Values.resources.requests.memory | quote }}
@@ -67,3 +88,9 @@ spec:
       - name: css-volume
         configMap:
           name: project1-config
+      - name: tmp-volume
+        emptyDir: {}
+      - name: run-volume
+        emptyDir: {}
+      - name: cache-volume
+        emptyDir: {}

@@ -22,9 +22,21 @@ spec:
       labels:
         app: {{ .Release.Name }}-db
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: mariadb
         image: mariadb:10.6
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         env:
         - name: MARIADB_ROOT_PASSWORD
           valueFrom:
@@ -36,7 +48,22 @@ spec:
         volumeMounts:
         - name: db-storage
           mountPath: /var/lib/mysql
+        - name: db-tmp
+          mountPath: /tmp
+        - name: db-run
+          mountPath: /run/mysqld
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 50m
+          limits:
+            memory: 128Mi
+            cpu: 100m
       volumes:
       - name: db-storage
         persistentVolumeClaim:
           claimName: {{ .Release.Name }}-db-pvc
+      - name: db-tmp
+        emptyDir: {}
+      - name: db-run
+        emptyDir: {}

@@ -19,5 +19,3 @@ data:
       padding: 20px; 
       border-radius: 10px; 
     }
-  DATABASE_URL: {{ .Values.db.host }}
-  DATABASE_PORT: {{ .Values.db.port | quote}}

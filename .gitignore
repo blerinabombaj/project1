@@ -17,3 +17,10 @@ Thumbs.db
 # Environment Secrets (NEVER push these)
 .env
 *.pem
+
+# Local terraform state
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars

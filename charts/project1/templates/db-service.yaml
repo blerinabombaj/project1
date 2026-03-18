@@ -3,7 +3,6 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-db-service
 spec:
-  type: LoadBalancer
   selector:
     app: {{ .Release.Name }}-db
   ports:

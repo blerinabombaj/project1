@@ -26,4 +26,4 @@ USER nginx
 # 6. Expose the new port
 EXPOSE 9000
 
-CMD ["nginxtypotest", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;"]

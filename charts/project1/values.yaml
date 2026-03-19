@@ -1,7 +1,7 @@
-replicaCount: 0
+replicaCount: 2
 
 db:
-  replicaCoun: 0
+  replicaCount: 1
 
 image:
   repository: digdigdigdig/devops-project1
@@ -15,7 +15,7 @@ service:
 
 ingress:
   enabled: true
-  host: "localhost"
+  host: "wronghost.local"
 
 metrics:
   enabled: true

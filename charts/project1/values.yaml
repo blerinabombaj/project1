@@ -5,7 +5,7 @@ db:
 
 image:
   repository: digdigdigdig/devops-project1
-  tag: c1bb41aaeea4eebb91402260f1394e6c94698a53
+  tag: a6f6ad2d9fd6cc59acd87fc12170e5dc9491b498
   pullPolicy: IfNotPresent
 
 service: 

@@ -7,5 +7,5 @@ spec:
     app: {{ .Release.Name }}-db
   ports:
     - protocol: TCP
-      port: 3307
-      targetPort: 3307
+      port: 3306
+      targetPort: 3306

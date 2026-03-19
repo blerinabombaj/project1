@@ -8,10 +8,8 @@ image:
   tag: ee8ca580809668af96fcd142ba694338840331bd
   pullPolicy: IfNotPresent
 
-service:
-  type: NodePort
+service: 
   port: 9000
-  nodePort: 30888
 
 ingress:
   enabled: true

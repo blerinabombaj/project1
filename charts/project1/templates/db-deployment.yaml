@@ -14,7 +14,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-db
 spec:
-  replicas: 0
+  replicas: {{ .Values.db.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-db

@@ -1,5 +1,8 @@
 replicaCount: 0
 
+db:
+  replicaCoun: 0
+
 image:
   repository: digdigdigdig/devops-project1
   tag: 4bf78cf5535fdfc1db171c9140f5a231c841c2d0

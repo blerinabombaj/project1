@@ -1,0 +1,25 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+# ----------------------------------------------------------------
+# ServiceMonitor for MariaDB (mysqld-exporter sidecar on port 9104)
+# Same concept as servicemonitor.yaml — see comments there.
+# ----------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-db
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Values.metrics.serviceMonitor.prometheusRelease }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-db   # matches the DB Service labels
+  endpoints:
+    - port: metrics                  # named port on db-service (port 9104)
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+{{- end }}

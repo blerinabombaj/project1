@@ -1,0 +1,41 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+# ----------------------------------------------------------------
+# ServiceMonitor — the Prometheus Operator way of scraping metrics.
+#
+# Why use this instead of annotations?
+#   - Annotations are a convention, not a standard. They only work
+#     if Prometheus is configured with the right relabeling rules.
+#   - ServiceMonitor is a proper Kubernetes CRD from the Prometheus
+#     Operator. It's declarative, GitOps-friendly, and doesn't
+#     require editing the global Prometheus config.
+#
+# How it works:
+#   1. Prometheus Operator watches for ServiceMonitor resources.
+#   2. It reads the selector and finds matching Services.
+#   3. It automatically adds scrape targets for those Services.
+#   4. No restart of Prometheus needed — it's dynamic.
+#
+# Requires: kube-prometheus-stack (or Prometheus Operator) installed.
+# ----------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-app
+  namespace: {{ .Release.Namespace }}
+  labels:
+    # This label must match the Prometheus Operator's serviceMonitorSelector.
+    # In kube-prometheus-stack the default is release: prometheus.
+    release: {{ .Values.metrics.serviceMonitor.prometheusRelease }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}   # must match your Service's labels
+  endpoints:
+    - port: metrics              # named port on the Service (port 9113)
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+{{- end }}

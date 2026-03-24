@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-stack
+  namespace: argocd
+  # ----------------------------------------------------------------
+  # Why a separate ArgoCD Application for Loki?
+  # Keeping observability tools as separate ArgoCD Applications means:
+  #   - They have their own sync policy and lifecycle
+  #   - They don't block your main app from deploying if Loki is down
+  #   - You can upgrade Loki independently
+  # ----------------------------------------------------------------
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki-stack
+    targetRevision: 2.10.2
+    helm:
+      values: |
+        # ----------------------------------------------------------------
+        # Loki — log storage and query engine (like Elasticsearch for logs
+        # but much lighter). Stores logs indexed only by labels, not
+        # full-text, which makes it far cheaper on resources.
+        # ----------------------------------------------------------------
+        loki:
+          enabled: true
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          # Retain logs for 7 days — adjust on AWS based on cost/need
+          config:
+            table_manager:
+              retention_deletes_enabled: true
+              retention_period: 168h
+
+        # ----------------------------------------------------------------
+        # Promtail — log collector agent (runs as a DaemonSet, one per node)
+        # Automatically discovers all pods via Kubernetes API,
+        # tails their stdout/stderr, and ships logs to Loki.
+        # No changes needed in your app — it works automatically.
+        # ----------------------------------------------------------------
+        promtail:
+          enabled: true
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"
+          # Enrich logs with Kubernetes metadata (namespace, pod, container)
+          config:
+            snippets:
+              extraRelabelConfigs:
+                - action: replace
+                  source_labels: [__meta_kubernetes_pod_label_app]
+                  target_label: app
+                - action: replace
+                  source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+
+        # Grafana is already installed via kube-prometheus-stack
+        # so we disable it here to avoid a duplicate
+        grafana:
+          enabled: false
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring   # same namespace as your Prometheus stack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

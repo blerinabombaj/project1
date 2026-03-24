@@ -1,0 +1,60 @@
+# ================================================================
+# values-observability.yaml
+# ================================================================
+# This file patches your existing kube-prometheus-stack Helm release
+# to add Loki and Tempo as Grafana datasources.
+#
+# How to apply:
+#   helm upgrade prometheus prometheus-community/kube-prometheus-stack \
+#     -n monitoring \
+#     -f values-observability.yaml
+#
+# Or via ArgoCD — add this file to your existing prometheus Application
+# under spec.source.helm.valueFiles alongside your current values.
+# ================================================================
+
+grafana:
+  # ----------------------------------------------------------------
+  # Additional datasources added to Grafana automatically.
+  # Without this, you'd have to add them manually in the Grafana UI
+  # every time (they'd disappear on pod restart).
+  # This makes them persistent and GitOps-managed.
+  # ----------------------------------------------------------------
+  additionalDataSources:
+
+    # Loki — for querying logs in the Explore tab
+    # After adding this, go to Grafana → Explore → select Loki
+    # and you can query logs with LogQL (similar to PromQL but for logs)
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki.monitoring.svc.cluster.local:3100
+      isDefault: false
+      jsonData:
+        # Link traces from logs — when a log line has a traceID,
+        # Grafana will show a button to jump straight to that trace in Tempo
+        derivedFields:
+          - datasourceUid: tempo
+            matcherRegex: "traceID=(\\w+)"
+            name: TraceID
+            url: "$${__value.raw}"
+
+    # Tempo — for querying traces in the Explore tab
+    # After adding this, go to Grafana → Explore → select Tempo
+    # and search traces by service, duration, tags, etc.
+    - name: Tempo
+      type: tempo
+      access: proxy
+      url: http://tempo.monitoring.svc.cluster.local:3100
+      uid: tempo
+      isDefault: false
+      jsonData:
+        # Link metrics from traces — jump from a trace to a Prometheus
+        # query for the same service at the same time
+        serviceMap:
+          datasourceUid: prometheus
+        # Link logs from traces — jump from a trace to Loki logs
+        tracesToLogs:
+          datasourceUid: loki
+          filterByTraceID: true
+          filterBySpanID: false

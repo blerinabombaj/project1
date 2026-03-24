@@ -7,12 +7,15 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi  
+      storage: 1Gi
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-db
+  labels:
+    app: {{ .Release.Name }}-db
 spec:
   replicas: {{ .Values.db.replicaCount }}
   selector:
@@ -22,6 +25,14 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-db
+      annotations:
+        # ---------------------------------------------------------------
+        # Same as the app deployment — fallback annotations for plain
+        # Prometheus SD. The real config is in db-servicemonitor.yaml.
+        # ---------------------------------------------------------------
+        prometheus.io/scrape: {{ .Values.metrics.enabled | quote }}
+        prometheus.io/port: "9104"   # mysqld-exporter port
+        prometheus.io/path: "/metrics"
     spec:
       securityContext:
         runAsNonRoot: true
@@ -30,8 +41,12 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
+
+      # ----------------------------------------------------------------
+      # Main container — MariaDB
+      # ----------------------------------------------------------------
       - name: mariadb
-        image: mariadb:10.6
+        image: mariadb:{{ .Values.db.image.tag }}
         securityContext:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
@@ -46,6 +61,7 @@ spec:
               key: db-password
         ports:
         - containerPort: 3306
+          name: mysql
         volumeMounts:
         - name: db-storage
           mountPath: /var/lib/mysql
@@ -55,11 +71,64 @@ spec:
           mountPath: /run/mysqld
         resources:
           requests:
-            memory: 64Mi
-            cpu: 50m
+            memory: {{ .Values.db.resources.requests.memory | quote }}
+            cpu: {{ .Values.db.resources.requests.cpu | quote }}
           limits:
-            memory: 128Mi
-            cpu: 100m
+            memory: {{ .Values.db.resources.limits.memory | quote }}
+            cpu: {{ .Values.db.resources.limits.cpu | quote }}
+
+      # ----------------------------------------------------------------
+      # Sidecar — MySQL/MariaDB Prometheus Exporter
+      # Why a sidecar? Same reason as Nginx — MariaDB has no native
+      # /metrics endpoint. This connects to MariaDB on localhost:3306,
+      # reads internal DB stats, and exposes them on port 9104.
+      # Metrics include: queries/sec, connections, slow queries,
+      # InnoDB buffer pool, replication lag, and more.
+      # ----------------------------------------------------------------
+      {{- if .Values.metrics.enabled }}
+      - name: mysqld-exporter
+        image: prom/mysqld-exporter:{{ .Values.metrics.mysqlExporter.tag }}
+        args:
+          - --mysqld.address=127.0.0.1:3306
+          - --mysqld.username=root
+          # Collects only the most useful metric sets — avoids noise
+          - --collect.info_schema.tables
+          - --collect.info_schema.innodb_metrics
+          - --collect.global_status
+          - --collect.global_variables
+          - --collect.slave_status
+        env:
+        - name: MYSQLD_EXPORTER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-db-secret
+              key: db-password
+        ports:
+        - containerPort: 9104
+          name: metrics
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 999
+          capabilities:
+            drop:
+              - ALL
+        resources:
+          requests:
+            memory: {{ .Values.metrics.mysqlExporter.resources.requests.memory | quote }}
+            cpu: {{ .Values.metrics.mysqlExporter.resources.requests.cpu | quote }}
+          limits:
+            memory: {{ .Values.metrics.mysqlExporter.resources.limits.memory | quote }}
+            cpu: {{ .Values.metrics.mysqlExporter.resources.limits.cpu | quote }}
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 9104
+          initialDelaySeconds: 10
+          periodSeconds: 15
+      {{- end }}
+
       volumes:
       - name: db-storage
         persistentVolumeClaim:

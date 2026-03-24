@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opentelemetry-operator
+  namespace: argocd
+  # ----------------------------------------------------------------
+  # OpenTelemetry Operator — installs the OTel CRDs into your cluster.
+  #
+  # What does this give you?
+  #   - OpenTelemetryCollector CRD: deploy a collector that receives
+  #     metrics/logs/traces and routes them to backends
+  #   - Instrumentation CRD: auto-instrument apps with one annotation
+  #     (Java, Python, Node.js — zero code changes needed)
+  #
+  # For your current static site (Nginx) this is not actively used yet,
+  # but having it installed means when you add a real backend app later
+  # you just add one annotation to the deployment and you get traces
+  # automatically. This is the "ready for AWS" preparation.
+  # ----------------------------------------------------------------
+spec:
+  project: default
+  source:
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart: opentelemetry-operator
+    targetRevision: 0.65.0
+    helm:
+      values: |
+        manager:
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+        # Needed to enable the Instrumentation CRD (auto-instrumentation)
+        admissionWebhooks:
+          enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

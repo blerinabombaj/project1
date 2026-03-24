@@ -19,3 +19,19 @@ data:
       padding: 20px; 
       border-radius: 10px; 
     }
+
+  nginx.conf: |                          # ← only addition
+    server {
+      listen {{ .Values.service.port }};
+
+      location / {
+        root /usr/share/nginx/html;
+        index index.html;
+      }
+
+      location /stub_status {
+        stub_status;
+        allow 127.0.0.1;   # sidecar only
+        deny all;
+      }
+    }

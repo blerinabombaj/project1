@@ -1,22 +1,32 @@
+# ================================================================
+# values.yaml — default values for project1 Helm chart
+# ================================================================
+
 replicaCount: 1
 
 db:
   replicaCount: 1
+  image:
+    tag: "10.6"
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
 
 image:
   repository: digdigdigdig/devops-project1
   tag: 40dea2339a15dd278c04d62e9ab0a3b5afaae2da
   pullPolicy: IfNotPresent
 
-service: 
+service:
   port: 9000
 
 ingress:
   enabled: true
   host: "localhost"
-
-metrics:
-  enabled: true
 
 resources:
   requests:
@@ -29,3 +39,52 @@ resources:
 ui:
   clockColor: "#222"
   background: "#ff0000"
+
+# ================================================================
+# Observability configuration
+# ================================================================
+metrics:
+  # Master switch — set to false to disable all exporters + monitors
+  enabled: true
+
+  # ----------------------------------------------------------------
+  # Nginx Prometheus Exporter sidecar
+  # Reads stub_status from Nginx and exposes /metrics on port 9113
+  # ----------------------------------------------------------------
+  nginxExporter:
+    tag: "1.1.0"
+    resources:
+      requests:
+        memory: "16Mi"
+        cpu: "10m"
+      limits:
+        memory: "32Mi"
+        cpu: "50m"
+
+  # ----------------------------------------------------------------
+  # MySQL/MariaDB Prometheus Exporter sidecar
+  # Connects to MariaDB on localhost and exposes /metrics on port 9104
+  # ----------------------------------------------------------------
+  mysqlExporter:
+    tag: "v0.15.1"
+    resources:
+      requests:
+        memory: "16Mi"
+        cpu: "10m"
+      limits:
+        memory: "32Mi"
+        cpu: "50m"
+
+  # ----------------------------------------------------------------
+  # ServiceMonitor — Prometheus Operator CRD
+  # Requires kube-prometheus-stack to be installed.
+  # If you're using plain Prometheus without the Operator,
+  # set serviceMonitor.enabled: false and rely on annotations instead.
+  # ----------------------------------------------------------------
+  serviceMonitor:
+    enabled: true
+    # Must match the label kube-prometheus-stack uses to discover ServiceMonitors.
+    # Default in kube-prometheus-stack is the Helm release name (usually "prometheus")
+    prometheusRelease: "prometheus"
+    interval: "30s"
+    scrapeTimeout: "10s"

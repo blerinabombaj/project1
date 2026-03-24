@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tempo
+  namespace: argocd
+  # ----------------------------------------------------------------
+  # Tempo — distributed tracing backend (stores and queries traces).
+  # Think of it as "Loki but for traces instead of logs".
+  #
+  # It's lightweight because it doesn't index trace content —
+  # it stores raw traces in object storage (S3 on AWS) and uses
+  # Loki/Prometheus to help you find the right trace.
+  #
+  # For your current Nginx static site, traces won't be generated yet.
+  # This is installed now so it's ready when you add a real backend.
+  # ----------------------------------------------------------------
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: tempo
+    targetRevision: 1.7.2
+    helm:
+      values: |
+        tempo:
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          # Retention: how long to keep traces
+          retention: 24h
+          # Receivers — what formats Tempo accepts
+          # otlp: standard OpenTelemetry format
+          # jaeger: compatible with Jaeger clients
+          receivers:
+            otlp:
+              protocols:
+                grpc:
+                  endpoint: "0.0.0.0:4317"
+                http:
+                  endpoint: "0.0.0.0:4318"
+            jaeger:
+              protocols:
+                thrift_http:
+                  endpoint: "0.0.0.0:14268"
+                grpc:
+                  endpoint: "0.0.0.0:14250"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

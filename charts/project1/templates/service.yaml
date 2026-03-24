@@ -9,6 +9,12 @@ spec:
   selector:
     app: {{ .Release.Name }}
   ports:
-    - protocol: TCP
+    - name: http                          # ← added
+      protocol: TCP
       port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.port }}
+    {{- if .Values.metrics.enabled }}
+    - name: metrics                       # ← added
+      port: 9113
+      targetPort: 9113
+    {{- end }}

@@ -45,7 +45,7 @@ ui:
 # ================================================================
 metrics:
   # Master switch — set to false to disable all exporters + monitors
-  enabled: false
+  enabled: true
 
   # ----------------------------------------------------------------
   # Nginx Prometheus Exporter sidecar

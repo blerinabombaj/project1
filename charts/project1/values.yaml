@@ -7,7 +7,7 @@ replicaCount: 1
 db:
   replicaCount: 1
   image:
-    tag: 1e934333cb21a16f65a996851c95541aa5243388
+    tag: 22c3547ba97f07a5af711f1fdd3f53c4222b22f1
   resources:
     requests:
       memory: "64Mi"
@@ -18,7 +18,7 @@ db:
 
 image:
   repository: digdigdigdig/devops-project1
-  tag: 1e934333cb21a16f65a996851c95541aa5243388
+  tag: 22c3547ba97f07a5af711f1fdd3f53c4222b22f1
   pullPolicy: IfNotPresent
 
 service:
@@ -52,7 +52,7 @@ metrics:
   # Reads stub_status from Nginx and exposes /metrics on port 9113
   # ----------------------------------------------------------------
   nginxExporter:
-    tag: 1e934333cb21a16f65a996851c95541aa5243388
+    tag: 22c3547ba97f07a5af711f1fdd3f53c4222b22f1
     resources:
       requests:
         memory: "16Mi"
@@ -66,7 +66,7 @@ metrics:
   # Connects to MariaDB on localhost and exposes /metrics on port 9104
   # ----------------------------------------------------------------
   mysqlExporter:
-    tag: 1e934333cb21a16f65a996851c95541aa5243388
+    tag: 22c3547ba97f07a5af711f1fdd3f53c4222b22f1
     resources:
       requests:
         memory: "16Mi"
